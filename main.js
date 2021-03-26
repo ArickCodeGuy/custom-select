@@ -35,7 +35,7 @@ class CustomSelect {
 
 
       let placeholder = document.createElement('div');
-      placeholder.innerHTML = options[0].html;
+      placeholder.innerHTML = options[selectEl.selectedIndex].html;
       placeholder.classList.add('custom-select-placeholder');
 
 
@@ -71,8 +71,10 @@ class CustomSelect {
           placeholder.innerHTML = option.innerHTML;
           this.toggleOptions(optionsContainer);
           realSelect.value = option.dataset.value;
-        })
-      })
+
+          optionsContainer.querySelector('.active');
+        });
+      });
     });
   }
 
