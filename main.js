@@ -13,6 +13,7 @@ class CustomSelect {
       let optionsElArr = selectEl.querySelectorAll('option');
       optionsElArr.forEach((el) => {
         options.push({
+          disabled: el.disabled,
           value: el.value,
           html: el.innerHTML
         });
@@ -26,9 +27,13 @@ class CustomSelect {
         let optionEl = document.createElement('div');
         optionEl.classList.add('custom-select-option');
 
-        if (selectEl.selectedIndex === i) {
-          optionEl.classList.add('active');
-        }
+        if (optionsElArr.selected) {
+          optionEl.classList.add('selected');
+        };
+
+        if (optionsElArr[i].disabled) {
+          optionEl.classList.add('disabled');
+        };
 
         optionEl.innerHTML = option.html;
         optionEl.dataset.value = option.value;
@@ -67,7 +72,7 @@ class CustomSelect {
       });
 
       let realSelect = el.querySelector('select');
-      let options = el.querySelectorAll('.custom-select-option');
+      let options = el.querySelectorAll('.custom-select-option:not(.disabled)');
       options.forEach((option) => {
         option.addEventListener('click', (e) => {
           placeholder.innerHTML = option.innerHTML;
