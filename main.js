@@ -27,7 +27,7 @@ class CustomSelect {
         let optionEl = document.createElement('div');
         optionEl.classList.add('custom-select-option');
 
-        if (optionsElArr.selected) {
+        if (optionsElArr[i].selected) {
           optionEl.classList.add('selected');
         };
 
