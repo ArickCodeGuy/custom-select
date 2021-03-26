@@ -2,6 +2,7 @@
 class CustomSelect {
   constructor(el) {
     this.el = document.querySelectorAll(el);
+    this.init();
   }
 
   create(elArr) {
@@ -82,4 +83,3 @@ class CustomSelect {
 };
 
 let mySel = new CustomSelect('.custom-select');
-mySel.init();
