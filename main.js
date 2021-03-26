@@ -22,12 +22,14 @@ class CustomSelect {
       let optionsEl = document.createElement('div');
       optionsEl.classList.add('custom-select-options');
       optionsEl.style.display = 'none';
-      options.forEach((option) => {
+      options.forEach((option, i) => {
         let optionEl = document.createElement('div');
         optionEl.classList.add('custom-select-option');
-        optionEl.addEventListener('click', function() {
 
-        });
+        if (selectEl.selectedIndex === i) {
+          optionEl.classList.add('active');
+        }
+
         optionEl.innerHTML = option.html;
         optionEl.dataset.value = option.value;
         optionsEl.insertAdjacentElement('beforeend', optionEl);
@@ -67,12 +69,13 @@ class CustomSelect {
       let realSelect = el.querySelector('select');
       let options = el.querySelectorAll('.custom-select-option');
       options.forEach((option) => {
-        option.addEventListener('click', () => {
+        option.addEventListener('click', (e) => {
           placeholder.innerHTML = option.innerHTML;
           this.toggleOptions(optionsContainer);
           realSelect.value = option.dataset.value;
 
-          optionsContainer.querySelector('.active');
+          optionsContainer.querySelector('.active').classList.remove('active');
+          e.target.classList.add('active')
         });
       });
     });
