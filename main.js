@@ -1,22 +1,25 @@
 'use strict';
 class CustomSelect {
   constructor(el, options) {
-    this.el = document.querySelectorAll(el);
+    this.el = el;
     this.options = options;
     this.setOptions();
-    this.init();
   }
 
   setOptions() {
-    this.options === undefined ? this.options = {}: false;
-    this.options.hideSelect === undefined ? this.options.hideSelect = true: false;
+    if (this.options) {
+      this.options.hideSelect === undefined ? this.options.hideSelect = true: false;
+      this.options.init === undefined ? this.options.init = true: false;
+      
+      this.options.init ? this.init(): false;
+    }else {
+      this.init();
+    }
+
   }
 
-  create(el) {
+  createOptions(el) {
     let selectEl = el.querySelector('select');
-
-    this.options.hideSelect ? selectEl.style.display = 'none': false;
-
     let optionElArr = selectEl.querySelectorAll('option');
     let optionsEl = document.createElement('div');
     optionsEl.classList.add('custom-select-options');
@@ -30,10 +33,23 @@ class CustomSelect {
       optionEl.dataset.value = el.value;
       optionsEl.insertAdjacentElement('beforeend', optionEl);
     });
+    return optionsEl
+  }
 
+  createPlaceholder(el) {
+    let selectEl = el.querySelector('select');
     let placeholder = document.createElement('div');
     placeholder.innerHTML = selectEl.querySelector(`option:nth-child(${selectEl.selectedIndex + 1})`).innerHTML;
     placeholder.classList.add('custom-select-placeholder');
+    return placeholder
+  }
+
+  create(el) {
+    this.options.hideSelect ? selectEl.style.display = 'none': false;
+
+    let optionsEl = this.createOptions(el);
+
+    let placeholder = this.createPlaceholder(el);
 
     let newSelectEl = document.createElement('div');
     newSelectEl.classList.add('custom-select-select');
@@ -62,22 +78,37 @@ class CustomSelect {
         this.toggleOptions(optionsContainer);
         realSelect.value = option.dataset.value;
 
-        optionsContainer.querySelector('.active').classList.remove('active');
-        e.target.classList.add('active')
+        optionsContainer.querySelector('.selected').classList.remove('selected');
+        e.target.classList.add('selected');
       });
     });
   }
 
+  afterInitFunc(el) {
+    typeof this.options.afterInit === 'function' ? this.options.afterInit(): false;
+  }
+
   init() {
-    if (this.el) {
-      this.el.forEach((el) => {
+    let el = document.querySelectorAll(this.el);
+    if (el) {
+      el.forEach((el) => {
         this.create(el);
         this.addEvents(el);
+        this.afterInitFunc(el);
+        el.classList.add('custom-select-initialized');
+      });
+    };
+    return `Initialized: ${this.el}`
+  }
+
+  destroy() {
+    let el = document.querySelectorAll(this.el);
+    if (el) {
+      el.forEach((el) => {
+        let customSelect = el.querySelector('.custom-select-select');
+        customSelect.remove();
+        el.classList.remove('custom-select-initialized');
       });
     };
   }
 };
-
-let mySel = new CustomSelect('.custom-select', {
-  hideSelect: false
-});
