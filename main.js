@@ -20,7 +20,6 @@ class CustomSelect {
       };
       return 'options set to your options obj'
     }else {
-      this.init();
       return 'options set to default options'
     }
   }
@@ -102,28 +101,54 @@ class CustomSelect {
     typeof this.options.afterInit === 'function' ? this.options.afterInit(): false;
   }
 
+  initSingleElement(el) {
+    this.create(el);
+    this.addEvents(el);
+    this.afterInitFunc(el);
+    el.classList.add('custom-select-initialized');
+  }
+
+  initArray(arr) {
+    arr.forEach((el) => this.initSingleElement(el));
+  }
+
   init() {
-    let el = document.querySelectorAll(this.el);
-    if (el) {
-      el.forEach((el) => {
-        this.create(el);
-        this.addEvents(el);
-        this.afterInitFunc(el);
-        el.classList.add('custom-select-initialized');
-      });
+    // if string is specified
+    if (typeof this.el === 'string') {
+      let el = document.querySelectorAll(this.el);
+      el ? this.initArray(el): false;
     };
-    return `Initialized: ${this.el}`
+
+    // if NodeList is specified
+    NodeList.prototype.isPrototypeOf(this.el) ? this.initArray(this.el): false;;
+
+    // if HTMLElement is specified
+    HTMLElement.prototype.isPrototypeOf(this.el) ? this.initSingleElement(this.el): false;
+  }
+
+  destroySingleElement(el) {
+    let customSelect = el.querySelector('.custom-select-select');
+    customSelect.remove();
+    el.classList.remove('custom-select-initialized');
+    el.classList.remove('options-toggled');
+    el.querySelector('select').style.display = 'block';
+  }
+
+  destroyArray(arr) {
+    arr.forEach((el) => this.destroySingleElement(el));
   }
 
   destroy() {
-    let el = document.querySelectorAll(this.el);
-    if (el) {
-      el.forEach((el) => {
-        let customSelect = el.querySelector('.custom-select-select');
-        customSelect.remove();
-        el.className = '';
-        el.classList.add('custom-select');
-      });
+    // if string is specified
+    if (typeof this.el === 'string') {
+      let el = document.querySelectorAll(this.el);
+      el ? this.destroyArray(el): false;
     };
+
+    // if NodeList is specified
+    NodeList.prototype.isPrototypeOf(this.el) ? this.destroyArray(this.el): false;;
+
+    // if HTMLElement is specified
+    HTMLElement.prototype.isPrototypeOf(this.el) ? this.destroySingleElement(this.el): false;
   }
 };

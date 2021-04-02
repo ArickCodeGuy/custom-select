@@ -9,9 +9,9 @@
   <div class="custom-select">
     <select name="" id="">
       <option value="1">One</option>
-      <option value="2">Two</option>
-      <option value="3">Three</option>
-      <option value="4" disabled="disabled">Four</option>
+      <option value="two">Two</option>
+      <option value="3three">Three</option>
+      <option value="four4" disabled="disabled">Four</option>
       <option value="5" selected="selected">Five</option>
     </select>
   </div>
@@ -34,6 +34,7 @@
     }
     .custom-select {
       max-width: 260px;
+      cursor: pointer;
       background-color: lightgreen;
       position: relative;
     }
@@ -75,10 +76,12 @@
   </style>
   <script src="main.js"></script>
   <script>
-    let mySel = new CustomSelect('.custom-select', {
-      someRandomKey: false,
-      afterInit: function() {}
-    });
+    // let mySel = new CustomSelect('.custom-select', {
+    //   someRandomKey: false,
+    //   afterInit: function() {}
+    // });
+    let myHtmlEl = document.querySelectorAll('.custom-select');
+    let mySel2 = new CustomSelect(myHtmlEl);
   </script>
 </body>
 </html>
