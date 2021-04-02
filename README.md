@@ -42,3 +42,8 @@ options {
   multipleSelect: false // WIP
 }
 ```
+
+Destroy custom select by calling:
+```javascript
+mySel.destroy()
+```
