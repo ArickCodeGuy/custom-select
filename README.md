@@ -3,7 +3,7 @@ creating styleless select via vanilla js
 
 ## Usage
 
-Create new custom select by simply calling new class on element containing your ```html <select> ```:
+Create new custom select by simply calling:
 ```javascript
 let mySel = new CustomSelect('className', [options]);
 ```
