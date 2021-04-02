@@ -1,21 +1,28 @@
 'use strict';
+let defaults = {
+  hideSelect: true,
+  init: true,
+  multipleSelect: false,
+};
+
 class CustomSelect {
   constructor(el, options) {
     this.el = el;
-    this.options = options;
-    this.setOptions();
+    this.options = defaults;
+    this.setOptions(options);
+    this.options.init ? this.init(): false;
   }
 
-  setOptions() {
-    if (this.options) {
-      this.options.hideSelect === undefined ? this.options.hideSelect = true: false;
-      this.options.init === undefined ? this.options.init = true: false;
-      
-      this.options.init ? this.init(): false;
+  setOptions(options) {
+    if (options) {
+      for (let option in options) {
+        this.options[option] = options[option];
+      };
+      return 'options set to your options obj'
     }else {
       this.init();
+      return 'options set to default options'
     }
-
   }
 
   createOptions(el) {
@@ -45,6 +52,10 @@ class CustomSelect {
   }
 
   create(el) {
+    let selectEl = el.querySelector('select');
+    if (!selectEl) {
+      throw `CustomSelect Err: No <select> tag found within ${this.el} element`
+    };
     this.options.hideSelect ? selectEl.style.display = 'none': false;
 
     let optionsEl = this.createOptions(el);
@@ -60,14 +71,17 @@ class CustomSelect {
   }
 
   toggleOptions(el) {
-    el.style.display === 'none' ? el.style.display = 'block': el.style.display = 'none';
+    el.classList.toggle('options-toggled');
+    let optionsEl = el.querySelector('.custom-select-options');
+    optionsEl.classList.toggle('toggled');
+    optionsEl.style.display === 'none' ? optionsEl.style.display = 'block': optionsEl.style.display = 'none';
   }
 
   addEvents(el) {
-    let optionsContainer = el.querySelector('.custom-select-options');
+    let optionsEl = el.querySelector('.custom-select-options');
     let placeholder = el.querySelector('.custom-select-placeholder');
     placeholder.addEventListener('click', () => {
-      this.toggleOptions(optionsContainer);
+      this.toggleOptions(el);
     });
 
     let realSelect = el.querySelector('select');
@@ -75,10 +89,10 @@ class CustomSelect {
     options.forEach((option) => {
       option.addEventListener('click', (e) => {
         placeholder.innerHTML = option.innerHTML;
-        this.toggleOptions(optionsContainer);
+        this.toggleOptions(el);
         realSelect.value = option.dataset.value;
 
-        optionsContainer.querySelector('.selected').classList.remove('selected');
+        optionsEl.querySelector('.selected').classList.remove('selected');
         e.target.classList.add('selected');
       });
     });
@@ -107,7 +121,8 @@ class CustomSelect {
       el.forEach((el) => {
         let customSelect = el.querySelector('.custom-select-select');
         customSelect.remove();
-        el.classList.remove('custom-select-initialized');
+        el.className = '';
+        el.classList.add('custom-select');
       });
     };
   }
