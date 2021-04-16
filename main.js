@@ -8,7 +8,7 @@ let defaults = {
 class CustomSelect {
   constructor(el, options) {
     this.el = el;
-    this.options = defaults;
+    this.options = {...defaults};
     this.setOptions(options);
     this.options.init ? this.init(): false;
   }
