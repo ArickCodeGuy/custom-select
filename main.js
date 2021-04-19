@@ -1,5 +1,5 @@
 'use strict';
-let defaults = {
+const defaultOptions = {
   hideSelect: true,
   init: true,
   multipleSelect: false,
@@ -8,26 +8,14 @@ let defaults = {
 class CustomSelect {
   constructor(el, options) {
     this.el = el;
-    this.options = {...defaults};
-    this.setOptions(options);
+    this.options = Object.assign(defaultOptions, options);
     this.options.init ? this.init(): false;
   }
 
-  setOptions(options) {
-    if (options) {
-      for (let option in options) {
-        this.options[option] = options[option];
-      };
-      return 'options set to your options obj'
-    }else {
-      return 'options set to default options'
-    }
-  }
-
   createOptions(el) {
-    let selectEl = el.querySelector('select');
-    let optionElArr = selectEl.querySelectorAll('option');
-    let optionsEl = document.createElement('div');
+    const selectEl = el.querySelector('select');
+    const optionElArr = selectEl.querySelectorAll('option');
+    const optionsEl = document.createElement('div');
     optionsEl.classList.add('custom-select-options');
     optionsEl.style.display = 'none';
     optionElArr.forEach((el) => {
@@ -51,17 +39,17 @@ class CustomSelect {
   }
 
   create(el) {
-    let selectEl = el.querySelector('select');
+    const selectEl = el.querySelector('select');
     if (!selectEl) {
       throw `CustomSelect Err: No <select> tag found within ${this.el} element`
     };
     this.options.hideSelect ? selectEl.style.display = 'none': false;
 
-    let optionsEl = this.createOptions(el);
+    const optionsEl = this.createOptions(el);
 
-    let placeholder = this.createPlaceholder(el);
+    const placeholder = this.createPlaceholder(el);
 
-    let newSelectEl = document.createElement('div');
+    const newSelectEl = document.createElement('div');
     newSelectEl.classList.add('custom-select-select');
     newSelectEl.insertAdjacentElement('afterbegin', placeholder);
     newSelectEl.insertAdjacentElement('beforeend', optionsEl);
@@ -115,12 +103,12 @@ class CustomSelect {
   init() {
     // if string is specified
     if (typeof this.el === 'string') {
-      let el = document.querySelectorAll(this.el);
+      const el = document.querySelectorAll(this.el);
       el ? this.initArray(el): false;
     };
 
     // if NodeList is specified
-    NodeList.prototype.isPrototypeOf(this.el) ? this.initArray(this.el): false;;
+    NodeList.prototype.isPrototypeOf(this.el) ? this.initArray(this.el): false;
 
     // if HTMLElement is specified
     HTMLElement.prototype.isPrototypeOf(this.el) ? this.initSingleElement(this.el): false;
