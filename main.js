@@ -3,6 +3,7 @@ const defaultOptions = {
   hideSelect: true,
   init: true,
   multipleSelect: false,
+  hideOnDocumentClick: true,
 };
 
 class CustomSelect {
@@ -12,10 +13,10 @@ class CustomSelect {
     this.options.init ? this.init(): false;
   }
 
-  createOptions(el) {
-    const selectEl = el.querySelector('select');
-    const optionElArr = selectEl.querySelectorAll('option');
-    const optionsEl = document.createElement('div');
+  createOptions(el, selectEl) {
+    let optionElArr = selectEl.querySelectorAll('option');
+    let optionsEl = document.createElement('div');
+
     optionsEl.classList.add('custom-select-options');
     optionsEl.style.display = 'none';
     optionElArr.forEach((el) => {
@@ -30,8 +31,7 @@ class CustomSelect {
     return optionsEl
   }
 
-  createPlaceholder(el) {
-    let selectEl = el.querySelector('select');
+  createPlaceholder(el, selectEl) {
     let placeholder = document.createElement('div');
     placeholder.innerHTML = selectEl.querySelector(`option:nth-child(${selectEl.selectedIndex + 1})`).innerHTML;
     placeholder.classList.add('custom-select-placeholder');
@@ -40,16 +40,16 @@ class CustomSelect {
 
   create(el) {
     const selectEl = el.querySelector('select');
+    const optionsEl = this.createOptions(el, selectEl);
+    const placeholder = this.createPlaceholder(el, selectEl);
+    const newSelectEl = document.createElement('div');
+
     if (!selectEl) {
       throw `CustomSelect Err: No <select> tag found within ${this.el} element`
     };
+
     this.options.hideSelect ? selectEl.style.display = 'none': false;
 
-    const optionsEl = this.createOptions(el);
-
-    const placeholder = this.createPlaceholder(el);
-
-    const newSelectEl = document.createElement('div');
     newSelectEl.classList.add('custom-select-select');
     newSelectEl.insertAdjacentElement('afterbegin', placeholder);
     newSelectEl.insertAdjacentElement('beforeend', optionsEl);
@@ -58,26 +58,34 @@ class CustomSelect {
   }
 
   toggleOptions(el) {
-    el.classList.toggle('options-toggled');
     let optionsEl = el.querySelector('.custom-select-options');
+
+    el.classList.toggle('options-toggled');
     optionsEl.classList.toggle('toggled');
     optionsEl.style.display === 'none' ? optionsEl.style.display = 'block': optionsEl.style.display = 'none';
   }
 
-  addEvents(el) {
+  closeOptions(el) {
     let optionsEl = el.querySelector('.custom-select-options');
-    let placeholder = el.querySelector('.custom-select-placeholder');
-    placeholder.addEventListener('click', () => {
-      this.toggleOptions(el);
-    });
 
-    let realSelect = el.querySelector('select');
-    let options = el.querySelectorAll('.custom-select-option:not(.disabled)');
-    options.forEach((option) => {
+    el.classList.remove('options-toggled');
+    optionsEl.classList.remove('toggled');
+    optionsEl.style.display = 'none';
+  }
+
+  addEvents(el) {
+    let selectEl = el.querySelector('select');
+    let optionsEl = el.querySelector('.custom-select-options');
+    let optionElArr = el.querySelectorAll('.custom-select-option:not(.disabled)');
+    let placeholder = el.querySelector('.custom-select-placeholder');
+
+    placeholder.addEventListener('click', () => this.toggleOptions(el));
+
+    optionElArr.forEach((option) => {
       option.addEventListener('click', (e) => {
         placeholder.innerHTML = option.innerHTML;
         this.toggleOptions(el);
-        realSelect.value = option.dataset.value;
+        selectEl.value = option.dataset.value;
 
         optionsEl.querySelector('.selected').classList.remove('selected');
         e.target.classList.add('selected');
@@ -101,17 +109,22 @@ class CustomSelect {
   }
 
   init() {
-    // if string is specified
     if (typeof this.el === 'string') {
+      // if string is specified
       const el = document.querySelectorAll(this.el);
       el ? this.initArray(el): false;
+
+    }else if (NodeList.prototype.isPrototypeOf(this.el)) {
+      // if NodeList is specified
+      this.initArray(this.el);
+
+    }else if (HTMLElement.prototype.isPrototypeOf(this.el)) {
+      // if HTMLElement is specified
+      this.initSingleElement(this.el);
+
+    }else {
+      throw `CustomSelect err: specified el: ${this.el} doesn't match eny allowed type of variable`;
     };
-
-    // if NodeList is specified
-    NodeList.prototype.isPrototypeOf(this.el) ? this.initArray(this.el): false;
-
-    // if HTMLElement is specified
-    HTMLElement.prototype.isPrototypeOf(this.el) ? this.initSingleElement(this.el): false;
   }
 
   destroySingleElement(el) {
@@ -127,16 +140,21 @@ class CustomSelect {
   }
 
   destroy() {
-    // if string is specified
     if (typeof this.el === 'string') {
-      let el = document.querySelectorAll(this.el);
+      // if string is specified
+      const el = document.querySelectorAll(this.el);
       el ? this.destroyArray(el): false;
+
+    }else if (NodeList.prototype.isPrototypeOf(this.el)) {
+      // if NodeList is specified
+      this.destroyArray(this.el);
+
+    }else if (HTMLElement.prototype.isPrototypeOf(this.el)) {
+      // if HTMLElement is specified
+      this.destroySingleElement(this.el);
+
+    }else {
+      throw `CustomSelect err: specified el: ${this.el} doesn't match eny allowed type of variable`;
     };
-
-    // if NodeList is specified
-    NodeList.prototype.isPrototypeOf(this.el) ? this.destroyArray(this.el): false;;
-
-    // if HTMLElement is specified
-    HTMLElement.prototype.isPrototypeOf(this.el) ? this.destroySingleElement(this.el): false;
   }
 };

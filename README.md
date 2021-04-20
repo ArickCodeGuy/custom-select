@@ -37,7 +37,7 @@ output
 options Object
 ```javascript
 options {
-  init: true // If you want to specify time when to init custom-select mySel.init()
+  init: true, // If you want to specify time when to init custom-select mySel.init()
   hideSelect: true, // Default is true. Determens whether you want to hide <select> element from page
   afterInit: function(el) {}, // Callback function that is called after creating custom select. Called for each individual select found on page
   multipleSelect: false // WIP
