@@ -9,6 +9,7 @@ const defaultOptions = {
 class CustomSelect {
   constructor(el, options) {
     this.el = el;
+    this.elements = [];
     this.options = Object.assign(defaultOptions, options);
     this.options.init ? this.init(): false;
   }
@@ -41,6 +42,7 @@ class CustomSelect {
   create(el) {
     const selectEl = el.querySelector('select');
     const optionsEl = this.createOptions(el, selectEl);
+    const optionElArr = optionsEl.querySelectorAll('option');
     const placeholder = this.createPlaceholder(el, selectEl);
     const newSelectEl = document.createElement('div');
 
@@ -105,7 +107,7 @@ class CustomSelect {
   }
 
   initArray(arr) {
-    arr.forEach((el) => this.initSingleElement(el));
+    arr.forEach((el, i) => this.initSingleElement(el));
   }
 
   init() {
