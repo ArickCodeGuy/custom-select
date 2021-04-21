@@ -3,14 +3,14 @@ const defaultOptions = {
   hideSelect: true,
   init: true,
   multipleSelect: false,
-  hideOnDocumentClick: true,
+  hideOnOutsideClick: true,
 };
 
 class CustomSelect {
   constructor(el, options) {
     this.el = el;
     this.elements = [];
-    this.options = Object.assign(defaultOptions, options);
+    this.options = Object.assign({}, defaultOptions, options);
     this.options.init ? this.init(): false;
   }
 
@@ -40,9 +40,10 @@ class CustomSelect {
   }
 
   create(el) {
+    // Creating custom select elements
     const selectEl = el.querySelector('select');
     const optionsEl = this.createOptions(el, selectEl);
-    const optionElArr = optionsEl.querySelectorAll('option');
+    const optionElArr = optionsEl.querySelectorAll('.custom-select-option');
     const placeholder = this.createPlaceholder(el, selectEl);
     const newSelectEl = document.createElement('div');
 
@@ -57,6 +58,30 @@ class CustomSelect {
     newSelectEl.insertAdjacentElement('beforeend', optionsEl);
 
     el.insertAdjacentElement('beforeend', newSelectEl);
+
+    // Adding events
+    placeholder.addEventListener('click', () => this.toggleOptions(el));
+
+    optionElArr.forEach((optionEl) => {
+      optionEl.addEventListener('click', (e) => {
+        if (!optionEl.classList.contains('disabled')) {
+          placeholder.innerHTML = optionEl.innerHTML;
+          this.toggleOptions(el);
+          selectEl.value = optionEl.dataset.value;
+
+          optionsEl.querySelector('.selected').classList.remove('selected');
+          e.currentTarget.classList.add('selected');
+        }
+      });
+    });
+
+    if (this.options.hideOnOutsideClick) {
+      document.addEventListener('click', (e) => {
+        if (!e.target === el || !el.contains(e.target)) {
+          this.closeOptions(el);
+        };
+      });
+    };
   }
 
   toggleOptions(el) {
@@ -75,33 +100,12 @@ class CustomSelect {
     optionsEl.style.display = 'none';
   }
 
-  addEvents(el) {
-    let selectEl = el.querySelector('select');
-    let optionsEl = el.querySelector('.custom-select-options');
-    let optionElArr = el.querySelectorAll('.custom-select-option:not(.disabled)');
-    let placeholder = el.querySelector('.custom-select-placeholder');
-
-    placeholder.addEventListener('click', () => this.toggleOptions(el));
-
-    optionElArr.forEach((option) => {
-      option.addEventListener('click', (e) => {
-        placeholder.innerHTML = option.innerHTML;
-        this.toggleOptions(el);
-        selectEl.value = option.dataset.value;
-
-        optionsEl.querySelector('.selected').classList.remove('selected');
-        e.target.classList.add('selected');
-      });
-    });
-  }
-
   afterInitFunc(el) {
     typeof this.options.afterInit === 'function' ? this.options.afterInit(): false;
   }
 
   initSingleElement(el) {
     this.create(el);
-    this.addEvents(el);
     this.afterInitFunc(el);
     el.classList.add('custom-select-initialized');
   }
