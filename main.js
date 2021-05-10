@@ -9,105 +9,118 @@ const defaultOptions = {
 class CustomSelect {
   constructor(el, options) {
     this.el = el;
-    this.elements = [];
     this.options = Object.assign({}, defaultOptions, options);
     this.options.init ? this.init(): false;
   }
 
-  createOptions(el, selectEl) {
-    let optionElArr = selectEl.querySelectorAll('option');
+  createOptions(elObj) {
     let optionsEl = document.createElement('div');
-
     optionsEl.classList.add('custom-select-options');
     optionsEl.style.display = 'none';
-    optionElArr.forEach((el) => {
+    elObj.optionElArr.forEach((el) => {
       let optionEl = document.createElement('div');
       optionEl.classList.add('custom-select-option');
       el.selected ? optionEl.classList.add('selected'): false;
       el.disabled ? optionEl.classList.add('disabled'): false;
       optionEl.innerHTML = el.innerHTML;
       optionEl.dataset.value = el.value;
+      elObj.customOptionElArr.push(optionEl);
       optionsEl.insertAdjacentElement('beforeend', optionEl);
     });
     return optionsEl
   }
 
-  createPlaceholder(el, selectEl) {
+  createPlaceholder(elObj) {
     let placeholder = document.createElement('div');
-    placeholder.innerHTML = selectEl.querySelector(`option:nth-child(${selectEl.selectedIndex + 1})`).innerHTML;
+    placeholder.innerHTML = elObj.selectEl.querySelector(`option:nth-child(${elObj.selectEl.selectedIndex + 1})`).innerHTML;
     placeholder.classList.add('custom-select-placeholder');
     return placeholder
   }
 
-  create(el) {
-    // Creating custom select elements
-    const selectEl = el.querySelector('select');
-    const optionsEl = this.createOptions(el, selectEl);
-    const optionElArr = optionsEl.querySelectorAll('.custom-select-option');
-    const placeholder = this.createPlaceholder(el, selectEl);
-    const newSelectEl = document.createElement('div');
-
-    if (!selectEl) {
-      throw `CustomSelect Err: No <select> tag found within ${this.el} element`
-    };
-
-    this.options.hideSelect ? selectEl.style.display = 'none': false;
-
+  createNewSelect(elObj) {
+    let newSelectEl = document.createElement('div');
     newSelectEl.classList.add('custom-select-select');
-    newSelectEl.insertAdjacentElement('afterbegin', placeholder);
-    newSelectEl.insertAdjacentElement('beforeend', optionsEl);
+    newSelectEl.insertAdjacentElement('afterbegin', elObj.placeholder);
+    newSelectEl.insertAdjacentElement('beforeend', elObj.customOptionsEl);
+    return newSelectEl
+  }
 
-    el.insertAdjacentElement('beforeend', newSelectEl);
+  create(elObj) {
+    // Creating custom select elements
+    elObj.customOptionsEl = this.createOptions(elObj);
+    elObj.placeholder = this.createPlaceholder(elObj);
+    elObj.newSelectEl = this.createNewSelect(elObj);
 
-    // Adding events
-    placeholder.addEventListener('click', () => this.toggleOptions(el));
+    // hide <select> element if option is specified
+    this.options.hideSelect ? elObj.selectEl.style.display = 'none': false;
 
-    optionElArr.forEach((optionEl) => {
-      optionEl.addEventListener('click', (e) => {
-        if (!optionEl.classList.contains('disabled')) {
-          placeholder.innerHTML = optionEl.innerHTML;
-          this.toggleOptions(el);
-          selectEl.value = optionEl.dataset.value;
+    // adding .custom-select-select element beforeend of .custom-select
+    elObj.el.insertAdjacentElement('beforeend', elObj.newSelectEl);
+  }
 
-          optionsEl.querySelector('.selected').classList.remove('selected');
+  addEvents(elObj) {
+    // click on placeholder
+    elObj.placeholder.addEventListener('click', () => this.toggleOptions(elObj));
+
+    // click on custom option element
+    elObj.customOptionElArr.forEach((customOptionElement) => {
+      customOptionElement.addEventListener('click', (e) => {
+        if (!customOptionElement.classList.contains('disabled')) {
+          elObj.placeholder.innerHTML = customOptionElement.innerHTML;
+          this.toggleOptions(elObj);
+          elObj.selectEl.value = customOptionElement.dataset.value;
+
+          elObj.customOptionsEl.querySelector('.selected').classList.remove('selected');
           e.currentTarget.classList.add('selected');
         }
       });
     });
 
+    // hide on click outside of custom select
     if (this.options.hideOnOutsideClick) {
       document.addEventListener('click', (e) => {
-        if (!e.target === el || !el.contains(e.target)) {
-          this.closeOptions(el);
+        if (!e.target === elObj.el || !elObj.el.contains(e.target)) {
+          this.closeOptions(elObj);
         };
       });
     };
   }
 
-  toggleOptions(el) {
-    let optionsEl = el.querySelector('.custom-select-options');
-
-    el.classList.toggle('options-toggled');
-    optionsEl.classList.toggle('toggled');
-    optionsEl.style.display === 'none' ? optionsEl.style.display = 'block': optionsEl.style.display = 'none';
+  toggleOptions(elObj) {
+    elObj.el.classList.toggle('options-toggled');
+    elObj.customOptionsEl.classList.toggle('toggled');
+    elObj.customOptionsEl.style.display === 'none' ? elObj.customOptionsEl.style.display = 'block': elObj.customOptionsEl.style.display = 'none';
   }
 
-  closeOptions(el) {
-    let optionsEl = el.querySelector('.custom-select-options');
-
-    el.classList.remove('options-toggled');
-    optionsEl.classList.remove('toggled');
-    optionsEl.style.display = 'none';
+  closeOptions(elObj) {
+    elObj.el.classList.remove('options-toggled');
+    elObj.customOptionsEl.classList.remove('toggled');
+    elObj.customOptionsEl.style.display = 'none';
   }
 
-  afterInitFunc(el) {
+  afterInitFunc(elObj) {
     typeof this.options.afterInit === 'function' ? this.options.afterInit(): false;
   }
 
   initSingleElement(el) {
-    this.create(el);
-    this.afterInitFunc(el);
-    el.classList.add('custom-select-initialized');
+    const elObj = {
+      el: el,
+      selectEl: el.querySelector('select'),
+      optionElArr: null,
+      customOptionsEl: null,
+      customOptionElArr: [],
+      placeholder: null,
+      newSelectEl: null,
+    };
+    if (!elObj.selectEl) {
+      throw `CustomSelect Err: No <select> tag found within ${this.el} element`
+    };
+    elObj.optionElArr = elObj.selectEl.querySelectorAll('option');
+
+    this.create(elObj);
+    this.addEvents(elObj);
+    this.afterInitFunc(elObj);
+    elObj.el.classList.add('custom-select-initialized');
   }
 
   initArray(arr) {
