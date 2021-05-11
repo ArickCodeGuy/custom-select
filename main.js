@@ -9,6 +9,7 @@ const defaultOptions = {
 class CustomSelect {
   constructor(el, options) {
     this.el = el;
+    this.elType = this.getType();
     this.options = Object.assign({}, defaultOptions, options);
     this.options.init ? this.init(): false;
   }
@@ -37,25 +38,25 @@ class CustomSelect {
     return placeholder
   }
 
-  createNewSelect(elObj) {
-    let newSelectEl = document.createElement('div');
-    newSelectEl.classList.add('custom-select-select');
-    newSelectEl.insertAdjacentElement('afterbegin', elObj.placeholder);
-    newSelectEl.insertAdjacentElement('beforeend', elObj.customOptionsEl);
-    return newSelectEl
+  createCustomSelect(elObj) {
+    let customSelectEl = document.createElement('div');
+    customSelectEl.classList.add('custom-select-select');
+    customSelectEl.insertAdjacentElement('afterbegin', elObj.placeholder);
+    customSelectEl.insertAdjacentElement('beforeend', elObj.customOptionsEl);
+    return customSelectEl
   }
 
   create(elObj) {
     // Creating custom select elements
     elObj.customOptionsEl = this.createOptions(elObj);
     elObj.placeholder = this.createPlaceholder(elObj);
-    elObj.newSelectEl = this.createNewSelect(elObj);
+    elObj.customSelectEl = this.createCustomSelect(elObj);
 
-    // hide <select> element if option is specified
+    // hide / not hide <select> element if option is specified
     this.options.hideSelect ? elObj.selectEl.style.display = 'none': false;
 
     // adding .custom-select-select element beforeend of .custom-select
-    elObj.el.insertAdjacentElement('beforeend', elObj.newSelectEl);
+    elObj.el.insertAdjacentElement('beforeend', elObj.customSelectEl);
   }
 
   addEvents(elObj) {
@@ -78,6 +79,7 @@ class CustomSelect {
 
     // hide on click outside of custom select
     if (this.options.hideOnOutsideClick) {
+      // currently there is no removeEventListener for this event on destroy()
       document.addEventListener('click', (e) => {
         if (!e.target === elObj.el || !elObj.el.contains(e.target)) {
           this.closeOptions(elObj);
@@ -110,7 +112,7 @@ class CustomSelect {
       customOptionsEl: null,
       customOptionElArr: [],
       placeholder: null,
-      newSelectEl: null,
+      customSelectEl: null,
     };
     if (!elObj.selectEl) {
       throw `CustomSelect Err: No <select> tag found within ${this.el} element`
@@ -120,7 +122,7 @@ class CustomSelect {
     this.create(elObj);
     this.addEvents(elObj);
     this.afterInitFunc(elObj);
-    elObj.el.classList.add('custom-select-initialized');
+    el.classList.add('custom-select-initialized');
   }
 
   initArray(arr) {
@@ -128,21 +130,13 @@ class CustomSelect {
   }
 
   init() {
-    if (typeof this.el === 'string') {
-      // if string is specified
+    if (this.elType === 'string') {
       const el = document.querySelectorAll(this.el);
       el ? this.initArray(el): false;
-
-    }else if (NodeList.prototype.isPrototypeOf(this.el)) {
-      // if NodeList is specified
+    }else if (this.elType === 'NodeList') {
       this.initArray(this.el);
-
-    }else if (HTMLElement.prototype.isPrototypeOf(this.el)) {
-      // if HTMLElement is specified
+    }else if (this.elType === 'HTMLElement') {
       this.initSingleElement(this.el);
-
-    }else {
-      throw `CustomSelect err: specified el: ${this.el} doesn't match eny allowed type of variable`;
     };
   }
 
@@ -159,19 +153,23 @@ class CustomSelect {
   }
 
   destroy() {
-    if (typeof this.el === 'string') {
-      // if string is specified
+    if (this.elType === 'string') {
       const el = document.querySelectorAll(this.el);
       el ? this.destroyArray(el): false;
-
-    }else if (NodeList.prototype.isPrototypeOf(this.el)) {
-      // if NodeList is specified
+    }else if (this.elType === 'NodeList') {
       this.destroyArray(this.el);
-
-    }else if (HTMLElement.prototype.isPrototypeOf(this.el)) {
-      // if HTMLElement is specified
+    }else if (this.elType === 'HTMLElement') {
       this.destroySingleElement(this.el);
+    };
+  }
 
+  getType() {
+    if (typeof this.el === 'string') {
+      return 'string'
+    }else if (NodeList.prototype.isPrototypeOf(this.el)) {
+      return 'NodeList'
+    }else if (HTMLElement.prototype.isPrototypeOf(this.el)) {
+      return 'HTMLElement'
     }else {
       throw `CustomSelect err: specified el: ${this.el} doesn't match eny allowed type of variable`;
     };
