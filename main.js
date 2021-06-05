@@ -80,11 +80,12 @@ class CustomSelect {
     // hide on click outside of custom select
     if (this.options.hideOnOutsideClick) {
       // currently there is no removeEventListener for this event on destroy()
-      document.addEventListener('click', (e) => {
+      const onDocumentMouseClick = e => {
         if (!e.target === elObj.el || !elObj.el.contains(e.target)) {
           this.#closeOptions(elObj);
         };
-      });
+      };
+      document.addEventListener('click', onDocumentMouseClick);
     };
   }
 
@@ -135,6 +136,7 @@ class CustomSelect {
     el.classList.remove('custom-select-initialized');
     el.classList.remove('options-toggled');
     el.querySelector('select').style.display = 'block';
+    document.removeEventListener('click', onDocumentMouseClick);
   }
 
   #destroyArray(arr) {
@@ -167,11 +169,11 @@ class CustomSelect {
   destroy() {
     if (this.elType === 'string') {
       const el = document.querySelectorAll(this.el);
-      el ? this.destroyArray(el): false;
+      el ? this.#destroyArray(el): false;
     }else if (this.elType === 'NodeList') {
-      this.destroyArray(this.el);
+      this.#destroyArray(this.el);
     }else if (this.elType === 'HTMLElement') {
-      this.destroySingleElement(this.el);
+      this.#destroySingleElement(this.el);
     };
   }
 };
